@@ -1,0 +1,12 @@
+/* MS Player - layout helpers for the 240x320 screen. */
+#app { display: block; }
+.menu-list .menu-item:last-child { margin-bottom: 0; }
+.file-list .file-item:last-child { margin-bottom: 0; }
+.help-body { font-size: 12px; line-height: 1.5; color: #d6e8ff; }
+.help-body b { color: #ffffff; }
+.help-body .help-sec { margin-bottom: 8px; }
+.help-body .help-key { color: #7ec8ff; }
+.dialog-body { font-size: 12px; line-height: 1.5; color: #d6e8ff; }
+.dialog-body .row { margin-bottom: 4px; }
+.dialog-body .k { color: #8fb8e8; }
+.dialog-body .v { color: #ffffff; word-break: break-all; }

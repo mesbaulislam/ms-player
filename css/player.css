@@ -1,0 +1,27 @@
+/* MS Player - player screen styles. v1.0.1: compact S-Vid-like player.
+   The video fills the whole stage. Info lives in two thin overlays INSIDE
+   the stage (top title bar, bottom progress + time bar) - never below the
+   video, never duplicated, never overlapping. Overlays auto-hide after 3s
+   of no key while playing; subtitles never hide. */
+#screen-player { padding: 0; overflow: hidden; background: #000000; }
+/* Normal mode: stage fills the area between header and footer (240x270).
+   Fullscreen mode: stage covers the full 240x320 display. */
+#playerStage { position: relative; width: 240px; height: 270px; background: #000000; overflow: hidden; }
+#playerStage.fullscreen { position: fixed; top: 0; left: 0; width: 240px; height: 320px; z-index: 50; }
+#playerVideo { width: 100%; height: 100%; background: #000000; transition: transform 0.25s ease; }
+/* Overlays: thin semi-transparent bars over the video. */
+.player-overlay { position: absolute; left: 0; right: 0; z-index: 10; background: rgba(0, 0, 0, 0.55); }
+#playerTopBar { top: 0; height: 20px; line-height: 20px; }
+#playerBottomBar { bottom: 0; padding: 3px 6px 4px 6px; }
+.player-filename { display: block; font-size: 11px; color: #ffffff; padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#playerProgressWrap { height: 5px; background: rgba(255, 255, 255, 0.25); }
+#playerProgress { height: 5px; width: 0%; background: #1e90ff; }
+#playerInfo { display: flex; height: 16px; line-height: 16px; font-size: 11px; color: #ffffff; margin-top: 2px; }
+#playerInfo #playerTime { flex: 1; }
+#playerInfo #playerMeta { text-align: right; white-space: nowrap; }
+/* Subtitles sit above the bottom bar and NEVER auto-hide. */
+#subtitleBar { position: absolute; left: 0; right: 0; bottom: 42px; z-index: 11; color: #ffffff; background: rgba(0,0,0,0.6); text-align: center; font-size: 13px; padding: 2px 4px; text-shadow: 1px 1px 2px #000000; }
+/* Auto-hide: only the two overlay bars hide. Toast + subtitles stay. */
+#playerStage.overlays-hidden #playerTopBar, #playerStage.overlays-hidden #playerBottomBar { display: none; }
+/* Toast floats above everything, including fullscreen stage + overlays. */
+#playerToast { bottom: 64px; z-index: 60; }

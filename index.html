@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>MS Player</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/player.css">
+<link rel="stylesheet" href="css/dialogs.css">
+</head>
+<body>
+<div id="app">
+  <div id="header"><span id="headerTitle">MS Player</span></div>
+
+  <!-- HOME -->
+  <div id="screen-home" class="screen">
+    <div class="menu-title">MS Player</div>
+    <div class="menu-sub">KaiOS Video Player &middot; v1.0.1</div>
+    <ul id="homeMenu" class="menu-list">
+      <li class="menu-item" data-home="library" tabindex="0">Videos</li>
+      <li class="menu-item" data-home="continue" tabindex="0">Continue Watching</li>
+      <li class="menu-item" data-home="hidden" tabindex="0">Hidden Files</li>
+      <li class="menu-item" data-home="settings" tabindex="0">Settings</li>
+      <li class="menu-item" data-home="help" tabindex="0">Help / Shortcuts</li>
+    </ul>
+  </div>
+
+  <!-- LIBRARY -->
+  <div id="screen-library" class="screen hidden">
+    <div class="list-head"><span id="libraryCount">Scanning...</span><span id="libraryFilterLabel"></span></div>
+    <ul id="libraryList" class="file-list"></ul>
+    <div id="libraryEmpty" class="empty-box hidden">No videos found. Put video files on the SD card, then press LSK to rescan.</div>
+    <div id="libraryError" class="error-box hidden"></div>
+  </div>
+
+  <!-- SEARCH -->
+  <div id="screen-search" class="screen hidden">
+    <label class="field-label" for="searchInput">Search videos</label>
+    <input id="searchInput" type="text" placeholder="Type to filter...">
+    <ul id="searchList" class="file-list"></ul>
+    <div id="searchEmpty" class="empty-box hidden">No matching videos.</div>
+  </div>
+
+  <!-- CONTINUE WATCHING -->
+  <div id="screen-continue" class="screen hidden">
+    <ul id="continueList" class="file-list"></ul>
+    <div id="continueEmpty" class="empty-box hidden">No history yet. Play a video and it will appear here.</div>
+  </div>
+
+  <!-- HIDDEN FILES -->
+  <div id="screen-hidden" class="screen hidden">
+    <ul id="hiddenList" class="file-list"></ul>
+    <div id="hiddenEmpty" class="empty-box hidden">No hidden files.</div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="screen-settings" class="screen hidden">
+    <label class="field-label" for="setExtensions">Extensions to scan (comma separated)</label>
+    <input id="setExtensions" type="text" value="mp4,3gp,mkv,mpa,3gpp">
+    <label class="check-row"><input id="setBgPlay" type="checkbox"> Play in background</label>
+    <label class="check-row"><input id="setAutoScale" type="checkbox"> Auto Scale (fit video to screen)</label>
+    <label class="check-row"><input id="setLock" type="checkbox"> App lock (PIN)</label>
+    <label class="field-label" for="setPin">New PIN (4+ digits, only when lock is on)</label>
+    <input id="setPin" type="password" placeholder="Leave blank to keep current PIN">
+    <button id="btnResetSettings" type="button">Reset settings</button>
+  </div>
+
+  <!-- HELP -->
+  <div id="screen-help" class="screen hidden">
+    <div class="help-body" id="helpBody"></div>
+  </div>
+
+  <!-- PLAYER: video fills the whole stage; info lives in overlays INSIDE the stage.
+       No below-video info rows: nothing overlaps, nothing duplicates. -->
+  <div id="screen-player" class="screen hidden">
+    <div id="playerStage">
+      <video id="playerVideo" playsinline></video>
+      <audio id="bgAudio" mozaudiochannel="content"></audio>
+      <audio id="mpaAudio"></audio>
+      <div id="playerTopBar" class="player-overlay"><span id="playerFileName" class="player-filename"></span></div>
+      <div id="playerBottomBar" class="player-overlay">
+        <div id="playerProgressWrap"><div id="playerProgress"></div></div>
+        <div id="playerInfo"><span id="playerTime">00:00 / 00:00</span><span id="playerMeta">1.0x &middot; 1.0x</span></div>
+      </div>
+      <div id="subtitleBar"></div>
+      <div id="playerToast" class="toast hidden"></div>
+    </div>
+  </div>
+
+  <!-- LOCK -->
+  <div id="screen-lock" class="screen hidden">
+    <div class="menu-title">MS Player locked</div>
+    <label class="field-label" for="lockPin">Enter PIN</label>
+    <input id="lockPin" type="password" placeholder="PIN">
+    <div id="lockError" class="error-box hidden">Wrong PIN.</div>
+  </div>
+
+  <!-- DIALOG: selected video options -->
+  <div id="dlg-options" class="dialog hidden">
+    <div class="dialog-box">
+      <div class="dialog-title" id="optionsTitle">Video options</div>
+      <ul id="optionsMenu" class="menu-list">
+        <li class="menu-item" data-opt="play" tabindex="0">Play</li>
+        <li class="menu-item" data-opt="resume" tabindex="0">Resume</li>
+        <li class="menu-item" data-opt="details" tabindex="0">Details</li>
+        <li class="menu-item" data-opt="hide" tabindex="0">Hide file</li>
+        <li class="menu-item" data-opt="unhide" tabindex="0">Unhide file</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- DIALOG: player options (no Audio tracks / Subtitles: embedded switching
+       does not work on this runtime, so no useless options are offered) -->
+  <div id="dlg-player-options" class="dialog hidden">
+    <div class="dialog-box">
+      <div class="dialog-title">Player options</div>
+      <ul id="playerOptionsMenu" class="menu-list">
+        <li class="menu-item" data-popt="details" tabindex="0">Details</li>
+        <li class="menu-item" data-popt="jump" tabindex="0">Jump to time</li>
+        <li class="menu-item" data-popt="screenshot" tabindex="0">Screenshot</li>
+        <li class="menu-item" data-popt="mute" tabindex="0">Mute / Unmute</li>
+        <li class="menu-item" data-popt="repeat" tabindex="0">Repeat On / Off</li>
+        <li class="menu-item" data-popt="settings" tabindex="0">Settings</li>
+        <li class="menu-item" data-popt="list" tabindex="0">Back to video list</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- DIALOG: jump to time -->
+  <div id="dlg-jump" class="dialog hidden">
+    <div class="dialog-box">
+      <div class="dialog-title">Jump to time</div>
+      <label class="field-label" for="jumpInput">Time (HH:MM:SS)</label>
+      <input id="jumpInput" type="text" value="00:00:00">
+    </div>
+  </div>
+
+  <!-- DIALOG: details -->
+  <div id="dlg-details" class="dialog hidden">
+    <div class="dialog-box">
+      <div class="dialog-title">Video details</div>
+      <div id="detailsBody" class="dialog-body"></div>
+    </div>
+  </div>
+
+  <!-- DIALOG: unsupported -->
+  <div id="dlg-unsupported" class="dialog hidden">
+    <div class="dialog-box">
+      <div class="dialog-title">Not supported</div>
+      <div id="unsupportedBody" class="dialog-body"></div>
+    </div>
+  </div>
+
+  <!-- DIALOG: reset confirm -->
+  <div id="dlg-reset" class="dialog hidden">
+    <div class="dialog-box">
+      <div class="dialog-title">Reset settings?</div>
+      <div class="dialog-body">This restores default settings and clears history and saved positions. Continue?</div>
+    </div>
+  </div>
+
+  <!-- DIALOG: clear history confirm -->
+  <div id="dlg-clear-history" class="dialog hidden">
+    <div class="dialog-box">
+      <div class="dialog-title">Clear history?</div>
+      <div class="dialog-body">This clears Continue Watching and all saved playback positions. Continue?</div>
+    </div>
+  </div>
+
+  <!-- DIALOG: missing file -->
+  <div id="dlg-missing" class="dialog hidden">
+    <div class="dialog-box">
+      <div class="dialog-title">File not found</div>
+      <div id="missingBody" class="dialog-body"></div>
+    </div>
+  </div>
+
+  <!-- DIALOG: playback error -->
+  <div id="dlg-error" class="dialog hidden">
+    <div class="dialog-box">
+      <div class="dialog-title">Playback error</div>
+      <div id="errorBody" class="dialog-body"></div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="dlg-loading" class="dialog hidden">
+    <div class="dialog-box"><div class="dialog-title">Loading...</div><div id="loadingBody" class="dialog-body">Please wait.</div></div>
+  </div>
+
+  <!-- EMPTY LIBRARY (standalone state screen) -->
+  <div id="screen-empty" class="screen hidden">
+    <div class="menu-title">No videos found</div>
+    <div class="dialog-body">No playable videos were found on the device storage. Copy .mp4 / .3gp / .mkv / .mpa files to the SD card and rescan.</div>
+  </div>
+
+  <div id="footer"><span id="softLeft">Open</span><span id="softCenter">Select</span><span id="softRight">Back</span></div>
+</div>
+<script src="js/utils.js"></script>
+<script src="js/media-capabilities.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/history.js"></script>
+<script src="js/subtitles.js"></script>
+<script src="js/video-library.js"></script>
+<script src="js/file-handler.js"></script>
+<script src="js/player.js"></script>
+<script src="js/navigation.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
